@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - YouTube Views Digital Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
+
+    <style>
+        /* --- DIGITAL + YOUTUBE BACKGROUND STYLE --- */
+        body {
+            background: radial-gradient(circle at 50% 0%, #2b0606 0%, #0a0a0c 60%, #030303 100%);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            color: #f1f1f1;
+            padding: 0 0 30px 0;
+            /* เว้นด้านบนเป็น 0 เพื่อให้แถบแจ้งเตือนชิดขอบ */
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ลูกเล่นเส้นตารางกราฟดิจิตอลจางๆ ด้านหลัง */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- LIVE WITHDRAWAL NOTIFICATION BAR --- */
+        .live-alert-bar {
+            background: linear-gradient(90deg, #990000, #ff0000, #16161a);
+            color: #ffffff;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.5s ease-in-out;
+            min-height: 40px;
+        }
+
+        .live-alert-bar i {
+            font-size: 16px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.9);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+                text-shadow: 0 0 8px #fff;
+            }
+
+            100% {
+                opacity: 0.4;
+                transform: scale(0.9);
+            }
+        }
+
+        .admin-container {
+            max-width: 1150px;
+            margin: 30px auto 0 auto;
+            padding: 0 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* การ์ดสไตล์ YouTube Premium ผสม Cyber Neon Glow */
+        .stat-card {
+            background: linear-gradient(145deg, #16161a, #0f0f12);
+            border: 1px solid rgba(255, 0, 0, 0.15);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 0, 0, 0.4);
+            box-shadow: 0 12px 40px rgba(255, 0, 0, 0.15);
+        }
+
+        /* ตารางสไตล์ดาร์กโหมดพรีเมียม */
+        .table-responsive {
+            background: #0f0f12;
+            border: 1px solid #27272a;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .table {
+            color: #f1f1f1 !important;
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background-color: #1f1f23 !important;
+            color: #ff0000 !important;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+        }
+
+        .table td,
+        .table td b,
+        .table td span {
+            color: #f1f1f1 !important;
+            border-color: #27272a !important;
+            background-color: transparent !important;
+            vertical-align: middle;
+        }
+
+        /* เมนูแท็บสไตล์ YouTube Navigation */
+        .nav-tabs {
+            border-bottom: 2px solid #27272a;
+        }
+
+        .nav-link {
+            color: #aaaaaa;
+            border: none !important;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 12px 20px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+        }
+
+        .nav-link.active {
+            color: #ff0000 !important;
+            background: transparent !important;
+            border-bottom: 3px solid #ff0000 !important;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        /* สถานะแนว Cyber Neon */
+        .status-pending {
+            background: rgba(234, 179, 8, 0.1);
+            color: #facc15 !important;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(234, 179, 8, 0.1);
+        }
+
+        .status-approved {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80 !important;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.1);
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171 !important;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+        }
+
+        /* ปุ่มและฟอร์ม */
+        .btn-youtube-red {
+            background-color: #ff0000;
+            color: #ffffff;
+            font-weight: bold;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-youtube-red:hover {
+            background-color: #cc0000;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .form-control-cyber {
+            background-color: #1f1f23 !important;
+            color: #ffffff !important;
+            border: 1px solid #3f3f46 !important;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .form-control-cyber:focus {
+            border-color: #ff0000 !important;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.2) !important;
+        }
+
+        .swal2-popup {
+            background-color: #1f1f23 !important;
+            color: #ffffff !important;
+            border: 1px solid #3f3f46;
+        }
+
+        .swal2-title,
+        .swal2-html-container {
+            color: #ffffff !important;
+        }
+
+        .swal2-input {
+            background-color: #0f0f12 !important;
+            color: #ffffff !important;
+            border: 1px solid #3f3f46 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- แถบแจ้งเตือนการถอนเงินแบบเรียลไทม์ด้านบนสุดของหน้าจอ -->
+    <div class="live-alert-bar" id="liveAlertBar">
+        <i class="fas fa-bell"></i>
+        <span id="liveAlertText">กำลังโหลดข้อมูลการทำรายการล่าสุด...</span>
+    </div>
+
+    <div class="admin-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="mb-0 text-white fw-bold"><i class="fab fa-youtube text-danger me-2"
+                        style="filter: drop-shadow(0 0 8px rgba(255,0,0,0.6));"></i>Studio Dashboard</h3>
+                <small class="text-muted" style="letter-spacing: 0.5px;">DIGITAL CONTENT & WITHDRAWAL MANAGEMENT</small>
+            </div>
+            <button onclick="clearSystemData()" class="btn btn-sm btn-outline-secondary text-light border-secondary"><i
+                    class="fas fa-trash-alt me-1"></i>Reset System</button>
+        </div>
+
+        <!-- STATS COUNTER -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <span class="text-muted small uppercase fw-bold" style="letter-spacing: 1px;">Total Members</span>
+                    <h2 class="mb-0 fw-bold text-white mt-1" id="statTotalUsers"
+                        style="text-shadow: 0 0 10px rgba(255,255,255,0.1);">0</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <span class="text-muted small uppercase fw-bold" style="letter-spacing: 1px;">Total System
+                        Debt</span>
+                    <h2 class="mb-0 fw-bold text-danger mt-1" id="statTotalKip"
+                        style="text-shadow: 0 0 10px rgba(255, 0, 0, 0.2);">0 KIP</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <span class="text-muted small uppercase fw-bold" style="letter-spacing: 1px;">Pending
+                        Withdrawals</span>
+                    <h2 class="mb-0 fw-bold text-warning mt-1" id="statPendingWithdraw"
+                        style="text-shadow: 0 0 10px rgba(234, 179, 8, 0.2);">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABS NAVIGATION -->
+        <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#usersContent"
+                    type="button"><i class="fas fa-users me-2"></i>Member List</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="withdraw-tab" data-bs-toggle="tab" data-bs-target="#withdrawContent"
+                    type="button">
+                    <i class="fas fa-money-check-alt me-2"></i>Withdrawal Requests
+                    <span class="badge bg-danger rounded-pill ms-1" id="withdrawBadgeCount"
+                        style="display: none;">0</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videosContent"
+                    type="button"><i class="fab fa-youtube me-2"></i>Manage Videos</button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!-- TAB 1: MEMBER LIST -->
+            <div class="tab-pane fade show active" id="usersContent">
+                <div class="table-responsive">
+                    <h5 class="mb-3 fw-bold"><i class="fas fa-list me-2 text-danger"></i>All Registered Accounts</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Total Watched</th>
+                                <th>Current Balance (รายได้สมาชิก)</th>
+                                <th>Withdraw Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: WITHDRAWAL REQUESTS -->
+            <div class="tab-pane fade" id="withdrawContent">
+                <div class="table-responsive">
+                    <h5 class="mb-3 fw-bold text-warning"><i class="fas fa-wallet me-2"></i>รายการรอกดอนุมัติ &
+                        ยกเลิกการถอนเงิน</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Amount</th>
+                                <th>Details</th>
+                                <th>Status</th>
+                                <th>Actions (จัดการ)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: MANAGE VIDEOS -->
+            <div class="tab-pane fade" id="videosContent">
+                <div class="p-4 mb-4"
+                    style="background: #16161a; border: 1px solid #27272a; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+                    <h5 class="fw-bold mb-3 text-white"><i class="fas fa-plus-circle me-2 text-danger"></i>Add New Task
+                        Video</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="small text-muted mb-1 fw-bold">Video Title</label>
+                            <input type="text" id="videoTitleInput" class="form-control form-control-cyber"
+                                placeholder="e.g., สปอยหนังตลกสุดฮา">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small text-muted mb-1 fw-bold">YouTube Link / ID</label>
+                            <input type="text" id="videoUrlInput" class="form-control form-control-cyber"
+                                placeholder="Paste Link or Video ID">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="small text-muted mb-1 fw-bold">Hours (ชั่วโมง)</label>
+                            <input type="number" id="videoHoursInput" class="form-control form-control-cyber" min="0"
+                                value="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="small text-muted mb-1 fw-bold">Minutes (นาที)</label>
+                            <input type="number" id="videoMinsInput" class="form-control form-control-cyber" min="0"
+                                max="59" value="10">
+                        </div>
+                        <div class="col-12 text-end mt-3">
+                            <button onclick="addNewVideo()" class="btn btn-youtube-red px-4 py-2"><i
+                                    class="fas fa-save me-1"></i> Add Video Task</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <h5 class="mb-3 fw-bold"><i class="fas fa-film me-2 text-danger"></i>Active Video Playlist</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Video Title</th>
+                                <th>YouTube ID</th>
+                                <th>Set Duration</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="videosTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // --- ฟังก์ชันสุ่มและแสดงแถบแจ้งเตือนถอนเงินทุกๆ 3 วินาที ---
+        function startLiveNotification() {
+            let allUsers = JSON.parse(localStorage.getItem('web_users')) || [];
+
+            function updateAlert() {
+                let username = "khamxiong"; // ชื่อเริ่มต้นกรณีที่ระบบยังไม่มีสมาชิกคนอื่น
+
+                // ถ้าระบบมีสมาชิกคนอื่นๆ ให้สุ่มดึงชื่อมาแสดงสลับกัน
+                if (allUsers.length > 0) {
+                    let randomIndex = Math.floor(Math.random() * allUsers.length);
+                    username = allUsers[randomIndex].username;
+                }
+
+                // สุ่มยอดเงินถอนระหว่าง 5,000,000 ถึง 25,000,000 kip โดยให้ลงท้ายด้วยหลักหมื่น/หลักแสนสวยๆ
+                let minKip = 5000000;
+                let maxKip = 25000000;
+                let randomAmount = Math.floor(Math.random() * (maxKip - minKip + 1)) + minKip;
+                // ตัดเศษให้กลายเป็นเลขกลมๆ
+                randomAmount = Math.floor(randomAmount / 50000) * 50000;
+
+                // อัปเดตข้อความลงแถบด้านบน
+                const alertTextEl = document.getElementById('liveAlertText');
+                alertTextEl.style.opacity = 0; // ทำ Effect ค่อยๆ เฟดหาย
+
+                setTimeout(() => {
+                    alertTextEl.innerHTML = `ผู้ใช้งาน <b class="text-warning">${username}</b> แจ้งขอถอนเงินจำนวน <b class="text-white">${randomAmount.toLocaleString()} KIP</b> สำเร็จแล้ว (กำลังรอตรวจสอบ)`;
+                    alertTextEl.style.opacity = 1; // ค่อยๆ แสดงข้อความใหม่
+                }, 300);
+            }
+
+            updateAlert(); // เรียกครั้งแรกทันที
+            setInterval(updateAlert, 3000); // ทำงานวนลูปสลับกันไปทุกๆ 3000 มิลลิวินาที (3 วินาที)
+        }
+
+        function loadAdminData() {
+            let allUsers = JSON.parse(localStorage.getItem('web_users')) || [];
+            let withdrawRequests = JSON.parse(localStorage.getItem('withdraw_requests')) || [];
+            let videoPlaylist = JSON.parse(localStorage.getItem('video_playlist')) || [];
+
+            document.getElementById('statTotalUsers').innerText = allUsers.length;
+            let totalKip = allUsers.reduce((sum, user) => sum + (user.balance || 0), 0);
+            document.getElementById('statTotalKip').innerText = Math.floor(totalKip).toLocaleString() + " KIP";
+            let pendingCount = withdrawRequests.filter(req => req.status === "Pending").length;
+            document.getElementById('statPendingWithdraw').innerText = pendingCount;
+
+            let badge = document.getElementById('withdrawBadgeCount');
+            if (pendingCount > 0) {
+                badge.innerText = pendingCount;
+                badge.style.display = "inline-block";
+            } else {
+                badge.style.display = "none";
+            }
+
+            // --- RENDER TAB 1: USERS ---
+            let usersHTML = allUsers.length === 0 ? `<tr><td colspan="5" class="text-center text-muted">No members found.</td></tr>` : "";
+            allUsers.forEach(user => {
+                let userLatestReq = withdrawRequests.filter(r => r.username === user.username).pop();
+                let withdrawStatusText = `<span class="text-muted small">ไม่มีคำขอ</span>`;
+                if (userLatestReq) {
+                    if (userLatestReq.status === "Pending") withdrawStatusText = `<span class="status-pending">รอกดอนุมัติ</span>`;
+                    if (userLatestReq.status === "Approved") withdrawStatusText = `<span class="status-approved">อนุมัติแล้ว</span>`;
+                    if (userLatestReq.status === "Rejected") withdrawStatusText = `<span class="status-rejected">ยกเลิกแล้ว</span>`;
+                }
+
+                usersHTML += `<tr>
+                  <td><i class="fas fa-user-circle text-secondary me-2"></i><b>${user.username}</b></td>
+                  <td>${user.totalWatched || 0} วินาที</td>
+                  <td class="text-white fw-bold">${Math.floor(user.balance || 0).toLocaleString()} KIP</td>
+                  <td>${withdrawStatusText}</td>
+                  <td><button onclick="adjustUserBalance('${user.username}')" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i> ปรับยอด</button></td>
+                </tr>`;
+            });
+            document.getElementById('usersTableBody').innerHTML = usersHTML;
+
+            // --- RENDER TAB 2: WITHDRAWALS ---
+            let withdrawHTML = withdrawRequests.length === 0 ? `<tr><td colspan="6" class="text-center text-muted">ไม่มีประวัติคำขอถอนเงินในระบบ</td></tr>` : "";
+            withdrawRequests.slice().reverse().forEach(req => {
+                let statusBadge = req.status === "Pending" ? `<span class="status-pending">Pending (รอตรวจสอบ)</span>` : (req.status === "Approved" ? `<span class="status-approved">Approved</span>` : `<span class="status-rejected">Rejected</span>`);
+
+                let actionButtons = req.status === "Pending" ? `
+                    <button onclick="processWithdraw('${req.id}', 'Approve')" class="btn btn-sm btn-success me-1"><i class="fas fa-check-circle"></i> อนุมัติ</button>
+                    <button onclick="processWithdraw('${req.id}', 'Reject')" class="btn btn-sm btn-danger"><i class="fas fa-times-circle"></i> ยกเลิก</button>
+                ` : `<span class="text-muted small"><i class="fas fa-lock"></i> จัดการแล้ว</span>`;
+
+                let detailsButton = `<button onclick="viewUserKyc('${req.id}')" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size:12px;"><i class="fas fa-search"></i> ดูข้อมูล</button>`;
+
+                withdrawHTML += `<tr>
+                    <td><small class="text-muted">${req.id}</small></td>
+                    <td><b>${req.username}</b></td>
+                    <td class="text-warning fw-bold">${req.amount.toLocaleString()} KIP</td>
+                    <td>${detailsButton}</td>
+                    <td>${statusBadge}</td>
+                    <td>${actionButtons}</td>
+                </tr>`;
+            });
+            document.getElementById('withdrawTableBody').innerHTML = withdrawHTML;
+
+            // --- RENDER TAB 3: VIDEOS ---
+            let videosHTML = videoPlaylist.length === 0 ? `<tr><td colspan="4" class="text-center text-muted">No videos in playlist. Please add one.</td></tr>` : "";
+            videoPlaylist.forEach((vid, index) => {
+                let h = vid.hours || 0;
+                let m = vid.mins || 0;
+                videosHTML += `<tr>
+                  <td><i class="fab fa-youtube text-danger me-2"></i><b>${vid.title}</b></td>
+                  <td><code>${vid.id}</code></td>
+                  <td><span class="badge bg-secondary text-white">${h} ชม. ${m} นาที</span></td>
+                  <td><button onclick="deleteVideo(${index})" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete</button></td>
+                </tr>`;
+            });
+            document.getElementById('videosTableBody').innerHTML = videosHTML;
+        }
+
+        function viewUserKyc(requestId) {
+            let withdrawRequests = JSON.parse(localStorage.getItem('withdraw_requests')) || [];
+            let req = withdrawRequests.find(r => r.id === requestId);
+            if (!req || !req.details) {
+                Swal.fire({ icon: 'info', title: 'ไม่มีข้อมูลเสริม', text: 'คำขอนี้ไม่มีข้อมูล KYC พ่วงมาด้วย' });
+                return;
+            }
+            let d = req.details;
+            Swal.fire({
+                title: 'ข้อมูลบัญชีผู้ถอนเงิน',
+                html: `
+                    <div class="text-start bg-dark p-3 rounded border border-secondary" style="font-size: 13px; line-height: 1.6;">
+                        <p class="mb-1"><b>ชื่อจริง-นามสกุล:</b> ${d.fullName}</p>
+                        <p class="mb-1"><b>วันเกิด:</b> ${d.dob}</p>
+                        <p class="mb-1"><b>สถานที่เกิด:</b> ${d.pob}</p>
+                        <p class="mb-1"><b>ประเทศ:</b> ${d.country}</p>
+                        <p class="mb-1"><b>เบอร์โทร:</b> ${d.phone}</p>
+                        <hr class="my-2 border-secondary">
+                        <p class="mb-1 text-warning"><b>ธนาคาร:</b> ${d.bankName}</p>
+                        <p class="mb-1 text-warning"><b>เลขบัญชี:</b> ${d.bankAcc}</p>
+                        <p class="mb-0 text-info"><b>Binance Link:</b> <a href="${d.binanceLink}" target="_blank" class="text-info">${d.binanceLink}</a></p>
+                    </div>
+                `,
+                background: '#121214', color: '#ffffff'
+            });
+        }
+
+        function extractYouTubeId(url) {
+            let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            let match = url.match(regExp);
+            return (match && match[2].length == 11) ? match[2] : url;
+        }
+
+        function addNewVideo() {
+            let title = document.getElementById('videoTitleInput').value.trim();
+            let urlField = document.getElementById('videoUrlInput').value.trim();
+            let hours = parseInt(document.getElementById('videoHoursInput').value) || 0;
+            let mins = parseInt(document.getElementById('videoMinsInput').value) || 0;
+
+            if (!title || !urlField) {
+                Swal.fire({ icon: 'error', title: 'Oops...', text: 'Please fill in both title and video URL!' });
+                return;
+            }
+
+            let videoId = extractYouTubeId(urlField);
+            let videoPlaylist = JSON.parse(localStorage.getItem('video_playlist')) || [];
+
+            videoPlaylist.push({ title: title, id: videoId, hours: hours, mins: mins });
+            localStorage.setItem('video_playlist', JSON.stringify(videoPlaylist));
+
+            document.getElementById('videoTitleInput').value = "";
+            document.getElementById('videoUrlInput').value = "";
+            document.getElementById('videoHoursInput').value = "0";
+            document.getElementById('videoMinsInput').value = "10";
+
+            Swal.fire({ icon: 'success', title: 'Video Added!', background: '#1f1f23', color: '#ffffff', timer: 1200, showConfirmButton: false });
+            loadAdminData();
+        }
+
+        function deleteVideo(index) {
+            let videoPlaylist = JSON.parse(localStorage.getItem('video_playlist')) || [];
+            videoPlaylist.splice(index, 1);
+            localStorage.setItem('video_playlist', JSON.stringify(videoPlaylist));
+            loadAdminData();
+        }
+
+        function processWithdraw(requestId, action) {
+            let withdrawRequests = JSON.parse(localStorage.getItem('withdraw_requests')) || [];
+            let allUsers = JSON.parse(localStorage.getItem('web_users')) || [];
+            let targetReq = withdrawRequests.find(req => req.id === requestId);
+            let targetUser = allUsers.find(user => user.username === targetReq.username);
+
+            let actionText = action === 'Approve' ? 'อนุมัติการถอนเงิน (หักเงินจากระบบ)' : 'ยกเลิกคำขอถอนเงิน';
+            let confirmColor = action === 'Approve' ? '#22c55e' : '#ef4444';
+
+            Swal.fire({
+                title: `คุณแน่ใจหรือไม่ที่จะ ${actionText}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: `ใช่, ${action === 'Approve' ? 'อนุมัติ' : 'ยกเลิก'}`,
+                confirmButtonColor: confirmColor,
+                background: '#1f1f23', color: '#ffffff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (action === 'Approve') {
+                        targetReq.status = "Approved";
+                        if (targetUser) {
+                            targetUser.balance -= targetReq.amount;
+                            if (targetUser.balance < 0) targetUser.balance = 0;
+                        }
+                    } else {
+                        targetReq.status = "Rejected";
+                    }
+                    localStorage.setItem('withdraw_requests', JSON.stringify(withdrawRequests));
+                    localStorage.setItem('web_users', JSON.stringify(allUsers));
+                    loadAdminData();
+                    Swal.fire({ icon: 'success', title: 'ทำรายการสำเร็จ!', background: '#1f1f23', color: '#ffffff', timer: 1000, showConfirmButton: false });
+                }
+            });
+        }
+
+        function adjustUserBalance(username) {
+            let allUsers = JSON.parse(localStorage.getItem('web_users')) || [];
+            let user = allUsers.find(u => u.username === username);
+            Swal.fire({
+                title: `Edit Account: ${username}`,
+                html: `
+          <div class="px-2">
+            <label class="text-danger small d-block mb-1 text-start fw-bold">Set Balance (KIP)</label>
+            <input id="swalBalance" class="swal2-input mt-0 mb-3 w-100" type="number" value="${Math.floor(user.balance || 0)}">
+            <label class="text-danger small d-block mb-1 text-start fw-bold">Set Total Watched (Seconds)</label>
+            <input id="swalWatched" class="swal2-input mt-0 w-100" type="number" value="${user.totalWatched || 0}">
+          </div>
+        `,
+                preConfirm: () => {
+                    return { newBalance: parseFloat(document.getElementById('swalBalance').value), newWatched: parseInt(document.getElementById('swalWatched').value) }
+                },
+                background: '#1f1f23', color: '#ffffff', showCancelButton: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    user.balance = result.value.newBalance;
+                    user.totalWatched = result.value.newWatched;
+                    localStorage.setItem('web_users', JSON.stringify(allUsers));
+                    loadAdminData();
+                }
+            });
+        }
+
+        function clearSystemData() {
+            Swal.fire({ title: 'Reset System?', text: "Wipe all data!", icon: 'danger', showCancelButton: true, background: '#1f1f23', color: '#ffffff' }).then((result) => {
+                if (result.isConfirmed) { localStorage.clear(); loadAdminData(); }
+            });
+        }
+
+        // เมื่อหน้าเว็บโหลดเสร็จ ให้เริ่มทำงานดึงข้อมูล และเปิดระบบแถบแจ้งเตือนทันที
+        window.onload = function () {
+            loadAdminData();
+            startLiveNotification();
+        };
+    </script>
+</body>
+
+</html>

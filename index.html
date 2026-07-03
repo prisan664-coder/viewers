@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Increase YouTube views</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* ຕົບແຕ່ງພື້ນຫຼັງແບບມີລວດລາຍ Futuristic Gradient */
+        body {
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #0f172a 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 15px;
+        }
+
+        /* ສ້າງລວດລາຍວົງມົນເຮືອງແສງຢູ່ພື້ນຫຼັງ (Background Orbs) */
+        body::before,
+        body::after {
+            content: "";
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.15);
+            filter: blur(80px);
+            z-index: 0;
+        }
+
+        body::before {
+            top: 10%;
+            left: 10%;
+            background: rgba(234, 179, 8, 0.1);
+        }
+
+        body::after {
+            bottom: 10%;
+            right: 10%;
+        }
+
+        /* ກ່ອງ Login ແບບກະຈົກເຮືອງແສງ (Glassmorphism Effect) */
+        .login-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 25px;
+            }
+        }
+
+        .login-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 20px 40px rgba(56, 189, 248, 0.1);
+        }
+
+        /* ໂລໂກ້ເວັບໄຊ */
+        .brand-logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #38bdf8, #eab308);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-icon {
+            color: #ef4444;
+            /* ສີແດງ YouTube */
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+        }
+
+        /* ຕົບແຕ່ງຟອມ Input */
+        .form-label {
+            color: #cbd5e1;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .input-group-text {
+            background-color: #334155;
+            border: 1px solid #475569;
+            color: #94a3b8;
+        }
+
+        .form-control {
+            background-color: #1e293b;
+            border: 1px solid #475569;
+            color: #ffffff;
+            padding: 12px;
+        }
+
+        .form-control:focus {
+            background-color: #1e293b;
+            border-color: #38bdf8;
+            color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        /* ປຸ່ມກົດ Sign In */
+        .btn-gradient {
+            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+            color: #0f172a;
+            font-weight: 700;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            color: #ffffff;
+            box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* ສ່ວນຕົບແຕ່ງລະບົບທົດລອງ */
+        .badge-demo {
+            background-color: rgba(234, 179, 8, 0.2);
+            color: #facc15;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card text-center">
+        <div class="mb-4">
+            <div class="mb-2">
+                <i class="fab fa-youtube fa-3x brand-icon"></i>
+            </div>
+            <h1 class="brand-logo mb-1">Increase YouTube views</h1>
+            <span class="badge-demo"><i class="fas fa-users me-1"></i> Multi-Account System v1.0</span>
+        </div>
+
+        <p class="text-muted small mb-4">Welcome back! Sign in to watch videos and earn rewards directly.</p>
+
+        <form id="signInForm" onsubmit="handleLogin(event)">
+            <div class="mb-3 text-start">
+                <label for="username" class="form-label">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="text" class="form-control" id="username" placeholder="Enter your username" required>
+                </div>
+            </div>
+
+            <div class="mb-4 text-start">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input type="password" class="form-control" id="password" placeholder="Enter your password"
+                        required>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="form-check text-start">
+                    <input type="checkbox" class="checkbox-input" id="rememberMe">
+                    <label class="form-check-label text-muted small" for="rememberMe">&nbsp;Remember me</label>
+                </div>
+                <a href="#" class="text-decoration-none small" style="color: #38bdf8;">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-gradient w-100 mb-3">
+                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+            </button>
+        </form>
+
+        <p class="text-muted small mb-0">Don't have an account? <a href="register.html" style="color: #eab308;"
+                class="text-decoration-none fw-bold">Register Now</a></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ລະບົບເຂົ້າສູ່ລະບົບ ແລະ ແຍກແຍະບັນຊີທີ່ສະໝັກມາ
+        function handleLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value;
+
+            // ດຶງຂໍ້ມູນບັນຊີທັງໝົດມາຈາກ localStorage
+            let allUsers = JSON.parse(localStorage.getItem('web_users')) || [];
+
+            // ຄົ້ນຫາບັນຊີທີ່ກົງກັນ
+            const validUser = allUsers.find(account => account.username === user && account.password === pass);
+
+            if (validUser) {
+                // ບັນທຶກຊື່ຜູ້ໃຊ້ທີ່ກຳລັງອອນລາຍຢູ່ ເພື່ອເອົາໄປໃຊ້ໃນໜ້າ Dashboard
+                localStorage.setItem('current_logged_in_user', user);
+
+                alert('Login Successful!\nWelcome back to Increase YouTube views, ' + user);
+
+                // ຖ້າເຂົ້າສູ່ລະບົບຜ່ານ ຈະລິ້ງຄ໌ໄປໜ້າ Dashboard
+                window.location.href = 'dashboard.html';
+            } else {
+                // ຖ້າບໍ່ມີບັນຊີນີ້ ຫຼື ໃສ່ລະຫັດຜິດ
+                alert("Invalid Username or Password!\nIf you don't have an account, please click 'Register Now'.");
+            }
+        }
+    </script>
+</body>
+
+</html>

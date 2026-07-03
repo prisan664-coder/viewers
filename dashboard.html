@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Video Streaming Simulator</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 Dark Theme CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
+
+    <style>
+        /* Cyberpunk & YouTube Red Dark Theme */
+        body {
+            background: #0a0a0c;
+            font-family: 'Segoe UI', sans-serif;
+            color: #ffffff;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Live Ticker Container at the top */
+        .live-ticker-container {
+            background: #ff003c;
+            color: #fff;
+            padding: 8px 0;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(255, 0, 60, 0.3);
+            border-bottom: 2px solid #ff3366;
+            position: relative;
+            z-index: 1000;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .ticker-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 20px;
+        }
+
+        .ticker-text {
+            animation: fadeInOut 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .main-container {
+            max-width: 650px;
+            margin: 25px auto;
+            padding: 0 15px;
+        }
+
+        /* Cyberpunk Glassmorphic Card */
+        .wallet-card {
+            background: linear-gradient(145deg, #16161a 0%, #0f0f12 100%);
+            border: 1px solid rgba(255, 0, 60, 0.25);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 0, 60, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ff003c, #ff5500);
+        }
+
+        .balance-display {
+            background: #020204;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Cyber Red / Neon Orange Button */
+        .btn-withdraw {
+            background: linear-gradient(135deg, #ff003c 0%, #ff5500 100%);
+            color: #ffffff;
+            font-weight: 700;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(255, 0, 60, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-withdraw:hover {
+            background: linear-gradient(135deg, #ff2255 0%, #ff7722 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 60, 0.5);
+            color: #ffffff;
+        }
+
+        /* Neon Green LINE Button */
+        .btn-line {
+            background: #06c755;
+            color: white;
+            font-weight: 700;
+            border: none;
+            padding: 13px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(6, 199, 85, 0.2);
+        }
+
+        .btn-line:hover {
+            background: #05b34c;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(6, 199, 85, 0.4);
+        }
+
+        /* Video Player Box */
+        .video-box {
+            background: linear-gradient(145deg, #16161a 0%, #0f0f12 100%);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #000000;
+            border: 1px solid rgba(255, 0, 60, 0.15);
+        }
+
+        .streaming-player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #1a1a22 0%, #050508 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-progress-box {
+            width: 85%;
+            background: #22222a;
+            height: 6px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff003c, #ff5500);
+            transition: width 1s linear;
+            box-shadow: 0 0 8px #ff003c;
+        }
+
+        /* Cyber Audio Waves */
+        .audio-wave {
+            display: flex;
+            align-items: flex-end;
+            height: 35px;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .audio-wave span {
+            width: 5px;
+            height: 10px;
+            background: #ff003c;
+            animation: bounce 0.5s ease infinite alternate;
+            border-radius: 50px;
+            box-shadow: 0 0 5px #ff003c;
+        }
+
+        .audio-wave span:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 28px;
+            background: #ff3300;
+            box-shadow: 0 0 5px #ff3300;
+        }
+
+        .audio-wave span:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 18px;
+            background: #ff5500;
+            box-shadow: 0 0 5px #ff5500;
+        }
+
+        .audio-wave span:nth-child(4) {
+            animation-delay: 0.3s;
+            height: 32px;
+            background: #ff0066;
+            box-shadow: 0 0 5px #ff0066;
+        }
+
+        @keyframes bounce {
+            100% {
+                height: 6px;
+            }
+        }
+
+        .playlist-wrapper {
+            background: linear-gradient(145deg, #16161a 0%, #0f0f12 100%);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .video-item {
+            background: #09090b;
+            border: 1px solid #1f1f26;
+            border-radius: 12px;
+            padding: 14px 15px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .video-item.active {
+            border-color: #ff003c;
+            background: rgba(255, 0, 60, 0.04);
+            box-shadow: 0 0 10px rgba(255, 0, 60, 0.1);
+        }
+
+        .btn-watch-task {
+            background: #1f1f26;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+        }
+
+        .video-item.active .btn-watch-task {
+            background: #ff003c;
+            border-color: #ff003c;
+        }
+
+        .btn-watch-task:hover {
+            background: #ff003c;
+            color: white;
+            border-color: #ff003c;
+        }
+
+        .swal2-styled.swal2-confirm {
+            background-color: #ff003c !important;
+            font-weight: 600;
+        }
+
+        .swal2-styled.swal2-cancel {
+            background-color: #22222a !important;
+            color: #fff !important;
+            /* เปลี่ยนจากสีเทาเป็นสีขาว */
+        }
+
+        .text-cyber-neon {
+            color: #ff5500;
+            text-shadow: 0 0 8px rgba(255, 85, 0, 0.3);
+        }
+
+        /* Styles for Terms Modal (Cyberpunk Theme) */
+        .cyber-modal .modal-content {
+            background: linear-gradient(145deg, #121216 0%, #0a0a0c 100%);
+            border: 1px solid #ff003c;
+            box-shadow: 0 0 25px rgba(255, 0, 60, 0.2);
+            border-radius: 16px;
+            color: #ffffff;
+        }
+
+        .cyber-modal .modal-header {
+            border-bottom: 1px solid rgba(255, 0, 60, 0.2);
+        }
+
+        .cyber-modal .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .cyber-modal .nav-tabs {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cyber-modal .nav-link {
+            color: #ffffff;
+            /* เปลี่ยนจากสีเทาเป็นสีขาว */
+            border: none;
+            font-weight: 600;
+            padding: 10px 20px;
+        }
+
+        .cyber-modal .nav-link.active {
+            background: transparent;
+            color: #ff003c;
+            border-bottom: 2px solid #ff003c;
+        }
+
+        .terms-content-scroll {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .terms-content-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .terms-content-scroll::-webkit-scrollbar-track {
+            background: #020204;
+        }
+
+        .terms-content-scroll::-webkit-scrollbar-thumb {
+            background: #ff003c;
+            border-radius: 10px;
+        }
+
+        .terms-section-title {
+            color: #ff5500;
+            font-weight: 700;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            border-left: 3px solid #ff003c;
+            padding-left: 8px;
+        }
+
+        /* เพิ่มเติมสไตล์ปรับแต่งสำหรับฟันเฟืองเมื่อไม่ได้ชี้เมาส์ */
+        .btn-gear-custom {
+            color: #ffffff !important;
+            opacity: 0.8;
+        }
+
+        .btn-gear-custom:hover {
+            color: #ff003c !important;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Live Ticker Container at the top -->
+    <div class="live-ticker-container text-center">
+        <div class="ticker-wrapper">
+            <div id="liveTicker" class="ticker-text">
+                <i class="fas fa-bolt text-warning animate-pulse"></i> Loading live withdrawal statistics...
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <!-- 1. WALLET -->
+        <div class="wallet-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="mb-0 text-cyber-neon fw-bold"><i class="fas fa-wallet me-2"></i>My Earning Wallet</h5>
+                    <!-- เกียร์/ฟันเฟือง ปุ่มเงื่อนไข (ปรับแก้การสลับสีให้ชัดเจน) -->
+                    <button class="btn p-0 btn-gear-custom" style="font-size: 16px; transition: all 0.2s;"
+                        data-bs-toggle="modal" data-bs-target="#termsModal">
+                        <i class="fas fa-cog fa-spin" style="animation-duration: 4s;"></i>
+                    </button>
+                </div>
+                <div>
+                    <span class="text-white small">Account: <span id="displayUser"
+                            class="text-white fw-bold">...</span></span>
+                </div>
+                <button onclick="handleLogout()" class="btn btn-sm btn-outline-danger px-3"
+                    style="border-radius: 8px;"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            <div class="balance-display text-center mb-4">
+                <span class="text-white small"
+                    style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;">TOTAL AVAILABLE
+                    BALANCE</span>
+                <h1 class="text-white fw-bold my-2" style="font-size: 36px; letter-spacing: 0.5px;"><span
+                        id="userBalance" class="text-danger">0</span> <span style="font-size: 22px;"
+                        class="text-white">KIP</span></h1>
+                <div class="text-white small mt-2"><i class="fas fa-history me-1"></i> Total Watched: <span
+                        id="totalWatched" class="text-white fw-bold">0</span> seconds</div>
+            </div>
+
+            <!-- Withdraw Button -->
+            <button onclick="openWithdrawModal()" class="btn btn-withdraw w-100 mb-2">WITHDRAW NOW (Min: 4,000,000
+                KIP)</button>
+
+            <!-- Contact Line Button -->
+            <a href="https://line.me/R/ti/p/@YOUR_LINE_ID" target="_blank"
+                class="btn btn-line w-100 text-center text-decoration-none">
+                <i class="fab fa-line me-2" style="font-size: 18px;"></i>Contact Admin via LINE
+            </a>
+        </div>
+
+        <!-- 2. MAIN SIMULATOR PLAYER BOX -->
+        <div class="video-box text-center mb-4">
+            <h6 class="mb-3 fw-bold text-start text-warning" id="nowPlayingTitle"><i
+                    class="fas fa-play-circle me-2"></i>Select a video task below</h6>
+
+            <div class="video-container mb-3" id="playerArea">
+                <div class="streaming-player">
+                    <p class="text-white small mb-0">Please select a video task below</p>
+                </div>
+            </div>
+
+            <div class="p-3 bg-black rounded-3 border border-secondary border-opacity-10">
+                <p class="mb-1 small text-white" id="statusText">System Standby</p>
+                <h5 class="text-warning mb-0 fw-bold" id="timerDisplay">Session Earnings: 0.00 KIP</h5>
+            </div>
+        </div>
+
+        <!-- 3. PLAYLIST SECTION -->
+        <div class="playlist-wrapper">
+            <h6 class="fw-bold mb-3 text-cyber-neon"><i class="fas fa-list-ul me-2"></i>Available Task Playlist</h6>
+            <div class="d-flex flex-column gap-2" id="playlistContainer"></div>
+        </div>
+
+    </div>
+
+    <!-- TERMS & CONDITIONS MODAL (POPUP Window) -->
+    <div class="modal fade cyber-modal" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger" id="termsModalLabel">
+                        <i class="fas fa-shield-alt me-2"></i>Terms & Conditions
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Nav Tabs for Languages -->
+                    <ul class="nav nav-tabs mb-3" id="termsLangTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="th-tab" data-bs-toggle="tab" data-bs-target="#terms-th"
+                                type="button" role="tab" aria-controls="terms-th" aria-selected="true">
+                                🇹🇭 ภาษาไทย
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="en-tab" data-bs-toggle="tab" data-bs-target="#terms-en"
+                                type="button" role="tab" aria-controls="terms-en" aria-selected="false">
+                                🇺🇸 English
+                            </button>
+                        </li>
+                    </ul>
+                    <!-- Tabs Content -->
+                    <div class="tab-content" id="termsLangTabsContent">
+                        <!-- ภาษาไทย (TH) -->
+                        <div class="tab-pane fade show active" id="terms-th" role="tabpanel" aria-labelledby="th-tab">
+                            <div class="terms-content-scroll">
+                                <div class="terms-section-title">1. เงื่อนไขการสร้างรายได้ (Earning & Reward Conditions)
+                                </div>
+                                <p>เพื่อควบคุมการจ่ายเงินไม่ให้ระบบโอเวอร์เพย์ (Overpay)
+                                    และกระตุ้นให้ผู้ใช้งานทำกิจกรรมอย่างต่อเนื่อง:</p>
+                                <ul>
+                                    <li><b>อัตราการสะสม:</b> คำนวณรายได้ตามเวลาที่ดูจริง วินาทีละ 1.38 KIP (ประมาณ 5,000
+                                        KIP ต่อชั่วโมง)</li>
+                                    <li><b>เกณฑ์การถอนเงินขั้นต่ำ:</b> กำหนดไว้ที่ 4,000,000 KIP ต่อครั้ง
+                                        เพื่อกรองผู้ใช้ที่ตั้งใจเข้ามาปั๊มเงินระยะสั้น</li>
+                                    <li><b>ข้อจำกัดการดูวิดีโอซ้ำ:</b>
+                                        วิดีโอแต่ละรายการในเพลย์ลิสต์จะสร้างรายได้ให้สูงสุด 1
+                                        ครั้งต่อวันต่อบัญชีเท่านั้น (รีเซ็ตระบบทุกเที่ยงคืน)
+                                        เพื่อป้องกันไม่ให้ผู้ใช้เปิดวิดีโอเดิมทิ้งไว้ข้ามคืน</li>
+                                    <li><b>การหักค่าธรรมเนียม:</b>
+                                        การถอนเงินทุกครั้งจะถูกหักค่าธรรมเนียมการโอน/เครือข่ายบล็อกเชน (เช่น 2% - 5%
+                                        หรือหักคงที่ตามที่แอดมินกำหนด)</li>
+                                </ul>
+
+                                <div class="terms-section-title">2. เงื่อนไขความปลอดภัยของระบบ (System Security
+                                    Conditions)</div>
+                                <p>เพื่อป้องกันการเจาะระบบเพื่อแฮกเหรียญหรือใช้ช่องโหว่ของโค้ด:</p>
+                                <ul>
+                                    <li><b>ระบบตรวจสอบ Session:</b> บัญชีผู้ใช้งาน 1 บัญชี
+                                        สามารถล็อกอินและสตรีมวิดีโอได้เพียง 1 หน้าจอ/1 อุปกรณ์ ในเวลาเดียวกันเท่านั้น
+                                        หากตรวจพบการล็อกอินซ้อน ระบบจะตัดการทำงานทันที</li>
+                                    <li><b>การตรวจสอบฝั่ง Server (Server-Side Verification):</b>
+                                        การคำนวณยอดเงินสะสมต้องจับคู่ระหว่างเวลาบนเบราว์เซอร์ของผู้ใช้กับฐานข้อมูลหลัก
+                                        หากผู้ใช้พยายามเปลี่ยนตัวเลขยอดเงินในหน้าเว็บ (Inspect Element)
+                                        ระบบจะไม่บันทึกและจะอิงยอดจริงจากหลังบ้านเท่านั้น</li>
+                                    <li><b>ระบบสุ่มตรวจสอบบอท (Anti-Bot Captcha):</b> สุ่มแสดงปุ่มให้กดยืนยันตัวตน
+                                        หรือตอบคำถามง่ายๆ บนหน้าจอทุกๆ 1-2 ชั่วโมง
+                                        เพื่อยืนยันว่ามีคนนั่งเฝ้าหน้าจออยู่จริง ไม่ใช่การตั้งบอทคลิกอัตโนมัติ</li>
+                                </ul>
+
+                                <div class="terms-section-title">3. เงื่อนไขด้านอินเทอร์เน็ตและการสตรีม (Internet &
+                                    Connection Conditions)</div>
+                                <p>ป้องกันปัญหาเวลาผู้ใช้เน็ตหลุดแล้วมาโวยวายว่าไม่ได้เงิน:</p>
+                                <ul>
+                                    <li><b>ความเสถียรของสัญญาณ:</b>
+                                        รายได้จะถูกคำนวณเมื่อวิดีโอมีการสตรีมอย่างต่อเนื่องและแสดงสถานะ Now Streaming
+                                        เท่านั้น หากอินเทอร์เน็ตหลุด สัญญาณขาดหาย หรือวิดีโอหยุดเล่น (Pause)
+                                        การสะสมเงินจะหยุดทำงานทันที</li>
+                                    <li><b>ห้ามใช้ VPN / Proxy:</b>
+                                        ผู้ใช้งานจะต้องเชื่อมต่อผ่านอินเทอร์เน็ตบ้านหรือเครือข่ายมือถือปกติ
+                                        ห้ามใช้โปรแกรมจำลอง IP, VPN หรือ Proxy เพื่อเปลี่ยนที่อยู่ในการเข้าใช้งาน
+                                        หากระบบตรวจพบ IP ที่ผิดปกติ บัญชีจะถูกระงับชั่วคราวเพื่อตรวจสอบ</li>
+                                </ul>
+
+                                <div class="terms-section-title">4. ข้อห้ามเด็ดขาด (Strict Prohibitions)</div>
+                                <p>กฎเหล็กที่หากผู้ใช้ละเมิด
+                                    แอดมินมีสิทธิ์แบนบัญชีและยึดเงินทันทีโดยไม่ต้องแจ้งล่วงหน้า:</p>
+                                <ul>
+                                    <li><b>ห้ามเปิดแท็บซ้อน (Multi-tabbing):</b> ห้ามเปิดหน้าแดชบอร์ดหลายๆ
+                                        แท็บพร้อมกันเพื่อปั๊มเงินสปีดคูณสอง</li>
+                                    <li><b>ห้ามใช้โปรแกรมช่วยเล่น (Macro / Automation Scripts):</b> ห้ามใช้บอท,
+                                        แฮกเกอร์ซอฟต์แวร์, หรือสคริปต์ Auto-Click ทุกรูปแบบ</li>
+                                    <li><b>ห้ามสมัครบัญชีผี (Multi-Accounts / Syvil Attack):</b> จำกัด 1 บุคคล ต่อ 1
+                                        บัญชีผู้ใช้งานเท่านั้น
+                                        หากตรวจพบว่าบุคคลเดียวกันสมัครหลายบัญชีเพื่อมากระจายถอนเงิน
+                                        ระบบจะระงับการจ่ายเงินทุกบัญชีที่เกี่ยวข้องกัน</li>
+                                </ul>
+
+                                <div class="terms-section-title">5. ความปลอดภัยต่อผู้ใช้งาน (User Safety & KYC)</div>
+                                <p>เงื่อนไขที่ช่วยสร้างความน่าเชื่อถือให้เว็บ
+                                    และเซฟฝั่งแอดมินเมื่อเกิดเคสกรอกข้อมูลผิดพลาด:</p>
+                                <ul>
+                                    <li><b>การยืนยันตัวตนเพื่อถอนเงิน (KYC):</b> ผู้ใช้ต้องกรอกข้อมูลจริง (ชื่อ-นามสกุล,
+                                        วันเกิด, เบอร์โทรศัพท์, ข้อมูลธนาคาร และลิงก์กระเป๋า Binance)
+                                        ให้ตรงกับเอกสารสิทธิ์ทางกฎหมาย เพื่อป้องกันการฟอกเงินและการแอบอ้างสิทธิ์</li>
+                                    <li><b>นโยบายความเป็นส่วนตัว (Data Privacy):</b>
+                                        ข้อมูลที่ผู้ใช้กรอกในฟอร์มถอนเงินจะถูกเก็บเป็นความลับสูงสุดในระบบหลังบ้านของแอดมิน
+                                        เพื่อใช้ในการโอนเงินรางวัลเท่านั้น จะไม่มีการเผยแพร่หรือส่งต่อให้บุคคลภายนอก
+                                    </li>
+                                    <li><b>การรับผิดชอบข้อมูล:</b>
+                                        หากผู้ใช้งานกรอกเลขบัญชีธนาคารหรือลิงก์กระเป๋าเงินดิจิทัล (Binance Link) ผิดพลาด
+                                        ส่งผลให้เงินโอนไปไม่ถึงหรือไม่ถูกต้อง ทางระบบจะไม่รับผิดชอบต่อความสูญเสียนั้นๆ
+                                        (ผู้ใช้ต้องตรวจสอบความถูกต้องด้วยตนเองก่อนกดส่งฟอร์ม)</li>
+                                </ul>
+
+                                <div class="terms-section-title">6. เงื่อนไขระยะเวลาการพิจารณาตรวจสอบยอด (Pending
+                                    Verification Period)</div>
+                                <ul>
+                                    <li><b>ระยะเวลาตรวจสอบ:</b> เมื่อผู้ใช้กดถอนเงิน ยอดเงินจะไม่เข้าทันที
+                                        แต่จะเข้าสู่สถานะ "รอการตรวจสอบ" (Pending) เป็นเวลา 24-72 ชั่วโมง
+                                        เพื่อให้ทีมแอดมินตรวจสอบประวัติการดูย้อนหลังว่าไม่ได้ใช้บอทหรือโกงระบบมา</li>
+                                    <li><b>สิทธิ์การปฏิเสธคำขอ:</b> หากตรวจพบความผิดปกติใน Log การใช้งาน
+                                        แอดมินมีสิทธิ์ยกเลิกคำขอถอนเงินนั้นและคืนยอดเข้ากระเป๋าเพื่อตรวจสอบ
+                                        หรือระงับบัญชีได้ทันที</li>
+                                </ul>
+
+                                <div class="terms-section-title">7. เงื่อนไขการจำกัดเพดานรายได้สูงสุด (Daily Earning
+                                    Cap)</div>
+                                <ul>
+                                    <li><b>เพดานรายได้ต่อวัน:</b> กำหนดว่าใน 1 วัน
+                                        บัญชีทั่วไปจะสามารถสะสมเงินจากการดูวิดีโอได้สูงสุดไม่เกินเท่าไหร่ (เช่น ไม่เกิน
+                                        120,000 KIP ต่อวัน หรือดูได้ไม่เกิน 24 ชั่วโมงต่อวัน)
+                                        เพื่อป้องกันกรณีที่ผู้ใช้ปล่อยสคริปต์รันข้ามวันข้ามคืนแบบไม่พัก</li>
+                                </ul>
+
+                                <div class="terms-section-title">8. เงื่อนไขการปรับลดคุณภาพและสิทธิ์ (Demotion &
+                                    Expiration Conditions)</div>
+                                <ul>
+                                    <li><b>บัญชีที่ไม่มีการเคลื่อนไหว (Inactive Account):</b>
+                                        หากบัญชีใดไม่มีการล็อกอินเข้ามาดูวิดีโอเลยติดต่อกันเกิน 30 วัน
+                                        ระบบจะถือว่าเป็นบัญชีร้าง และยอดเงินสะสมในกระเป๋าจะถูกรีเซ็ตเป็น 0
+                                        หรือถูกระงับบัญชีเพื่อลดภาระของฐานข้อมูล</li>
+                                    <li><b>การปรับเปลี่ยนเงื่อนไขรางวัล:</b>
+                                        แอดมินขอสงวนสิทธิ์ในการปรับลดหรือเพิ่มอัตราผลตอบแทน (KIP ต่อชั่วโมง)
+                                        หรือเพิ่มเกณฑ์การถอนเงินขั้นต่ำในอนาคตตามสภาวะเศรษฐกิจหรือค่าเงิน
+                                        โดยไม่ต้องแจ้งให้ทราบล่วงหน้า</li>
+                                </ul>
+
+                                <div class="terms-section-title">9. เงื่อนไขข้อจำกัดความรับผิดชอบทางกฎหมาย (Limitation
+                                    of Liability)</div>
+                                <ul>
+                                    <li><b>ระบบขัดข้องทางเทคนิค:</b> หากเกิดเหตุสุดวิสัย เช่น เซอร์เวอร์ล่ม,
+                                        ฐานข้อมูลเสียหาย, หรือภัยพิบัติทางอินเทอร์เน็ตที่ทำให้ข้อมูลยอดเงินบางส่วนสูญหาย
+                                        ทางแพลตฟอร์มจะพยายามกู้คืนข้อมูลอย่างเต็มความสามารถ
+                                        แต่จะไม่รับผิดชอบในส่วนของค่าชดเชยความเสียหายใดๆ
+                                        เกินกว่ายอดเงินที่มีหลักฐานชัดเจน</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- ภาษาอังกฤษ (EN) -->
+                        <div class="tab-pane fade" id="terms-en" role="tabpanel" aria-labelledby="en-tab">
+                            <div class="terms-content-scroll">
+                                <div class="terms-section-title">1. Earning & Reward Conditions</div>
+                                <p>To control payouts against overpaying and motivate continuous active user
+                                    engagements:</p>
+                                <ul>
+                                    <li><b>Accumulation Rate:</b> Earnings calculated on real watch time at 1.38 KIP per
+                                        second (approx. 5,000 KIP per hour).</li>
+                                    <li><b>Minimum Withdrawal Threshold:</b> Fixed at 4,000,000 KIP per request to
+                                        filter out short-term exploiters or bots.</li>
+                                    <li><b>Video Re-watch Restriction:</b> Each video item within the playlist generates
+                                        earnings at a maximum of 1 time per day per account (System resets every
+                                        midnight) to avoid overnight repeat loop runs.</li>
+                                    <li><b>Fee Deductions:</b> Every withdrawal request is subject to a
+                                        transaction/blockchain network fee deduction (e.g., 2% - 5% or a flat fee
+                                        determined by the Admin).</li>
+                                </ul>
+
+                                <div class="terms-section-title">2. System Security Conditions</div>
+                                <p>To protect the core framework against balance manipulation and code exploits:</p>
+                                <ul>
+                                    <li><b>Session Monitor System:</b> One user account can log in and stream video on
+                                        only 1 screen/1 device simultaneously. Dual session overlaps will trigger an
+                                        instant disconnection.</li>
+                                    <li><b>Server-Side Verification:</b> Accumulated balance calculation must match the
+                                        user browser time with the core master database. Front-end edits (Inspect
+                                        Element) will be ignored; the platform relies strictly on backend values.</li>
+                                    <li><b>Anti-Bot Captcha Check:</b> Randomly prompts identity verification buttons or
+                                        basic questions every 1-2 hours to ensure active manual monitoring rather than
+                                        automated script clicking.</li>
+                                </ul>
+
+                                <div class="terms-section-title">3. Internet & Connection Conditions</div>
+                                <p>Prevents balance disputes arising from user connection disconnections:</p>
+                                <ul>
+                                    <li><b>Signal Stability:</b> Rewards accumulate strictly when videos are streamed
+                                        continuously showing the "Now Streaming" status. Internet drops, signal
+                                        failures, or video pausing will instantly halt the accumulation.</li>
+                                    <li><b>VPN / Proxy Prohibition:</b> Users must connect via home broadbands or
+                                        standard mobile data. Usage of IP manipulators, VPNs, or Proxies is strictly
+                                        banned. Anomalous IPs will cause a temporary account suspension for review.</li>
+                                </ul>
+
+                                <div class="terms-section-title">4. Strict Prohibitions</div>
+                                <p>Violations grant administrators absolute rights to terminate accounts and forfeit
+                                    rewards instantly without notice:</p>
+                                <ul>
+                                    <li><b>Multi-tabbing Banned:</b> Opening multiple dashboards at the same time to
+                                        double earning speeds is prohibited.</li>
+                                    <li><b>No Automation Scripts:</b> Usage of bots, hacker software, macros, or
+                                        auto-clickers of any form is strictly forbidden.</li>
+                                    <li><b>Multi-Accounts / Sybil Attack:</b> Strictly limited to 1 user profile per
+                                        individual. If discovered managing multiple clone profiles for distributed
+                                        payouts, all associated wallets will face termination.</li>
+                                </ul>
+
+                                <div class="terms-section-title">5. User Safety & KYC</div>
+                                <p>Establishes site credibility and defines liability parameters regarding data entries:
+                                </p>
+                                <ul>
+                                    <li><b>KYC Identity Verification:</b> Users must provide authentic matching legal
+                                        data (Full Name, Date of Birth, Phone, Bank details, Binance link) to prevent
+                                        money laundering and identity theft.</li>
+                                    <li><b>Data Privacy:</b> Information submitted via withdrawal forms remains strictly
+                                        confidential within the secure admin system, used solely for payouts, and never
+                                        shared with third parties.</li>
+                                    <li><b>Data Accuracy Liability:</b> If a user submits incorrect bank details or
+                                        Binance Wallet Links causing transfer failures, the system accepts zero
+                                        liability for losses. Verification prior to submission is mandatory.</li>
+                                </ul>
+
+                                <div class="terms-section-title">6. Pending Verification Period</div>
+                                <ul>
+                                    <li><b>Review Period:</b> Upon withdrawal submission, balances do not process
+                                        instantly. They enter a "Pending" status for 24-72 hours allowing admins to
+                                        review historical watch logs against exploits.</li>
+                                    <li><b>Right of Refusal:</b> Admins hold absolute authority to cancel malicious
+                                        requests, return balances for audit, or freeze active accounts if operational
+                                        anomalies are discovered in logs.</li>
+                                </ul>
+
+                                <div class="terms-section-title">7. Daily Earning Cap</div>
+                                <ul>
+                                    <li><b>Daily Revenue Limits:</b> Standard accounts possess a maximum daily earning
+                                        limit (e.g., up to 120,000 KIP or capped at 24 watch-hours daily) preventing
+                                        bots from running infinitely.</li>
+                                </ul>
+
+                                <div class="terms-section-title">8. Demotion & Expiration Conditions</div>
+                                <ul>
+                                    <li><b>Inactive Accounts:</b> Profiles failing to log in or watch videos for 30
+                                        consecutive days are flagged inactive. Accumulated balances reset to 0 or
+                                        accounts face closure to reduce database overheads.</li>
+                                    <li><b>Reward Adjustment Rights:</b> Administrators reserve absolute rights to
+                                        modify or scale back reward rates (KIP/hour) or raise withdrawal thresholds
+                                        based on market economies without prior notification.</li>
+                                </ul>
+
+                                <div class="terms-section-title">9. Limitation of Liability</div>
+                                <ul>
+                                    <li><b>Technical Outages:</b> Under force majeure (server failures, database
+                                        corruption, global network disasters) resulting in potential data loss, the
+                                        platform commits to recovery efforts but denies liability for compensations
+                                        beyond verifiable log evidence.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary py-2 px-4" data-bs-dismiss="modal"
+                        style="border-radius: 8px;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let currentUser = localStorage.getItem('current_logged_in_user');
+        let allUsers = JSON.parse(localStorage.getItem('web_users')) || [];
+        let userAccount = allUsers.find(u => u.username === currentUser);
+
+        if (!currentUser || !userAccount) { window.location.href = 'index.html'; }
+
+        document.getElementById('displayUser').innerText = userAccount.username;
+        document.getElementById('userBalance').innerText = Math.floor(userAccount.balance).toLocaleString();
+        document.getElementById('totalWatched').innerText = userAccount.totalWatched || 0;
+
+        let earningInterval;
+        const ratePerSecond = 5000 / 3600;
+        let sessionEarnings = 0;
+        let currentActiveVideoId = "";
+
+        let currentVideoCurrentTime = 0;
+        let currentVideoDuration = 0;
+
+        // English Live Ticker Function with randomly generated English/Karaoke Lao names
+        function initLiveTicker() {
+            const laonames = [
+                "Keo", "Nong", "Noy", "Somphone", "Phonpaseuth", "Phon", "Touk", "Toukta",
+                "Anousone", "Bounmy", "Mina", "Seng", "Ketsana", "Kham", "Vanh", "Souk",
+                "Pany", "Thida", "Nalin", "Boupha", "Chanpheng", "Daovone", "Khonesavanh",
+                "Manivanh", "Onechanh", "Phetsamone", "Sithong", "Vilaiphone", "Xaysana"
+            ];
+            const tickerEl = document.getElementById('liveTicker');
+
+            function updateTicker() {
+                let randomName = laonames[Math.floor(Math.random() * laonames.length)];
+                let randomId = randomName + "_" + Math.floor(10 + Math.random() * 89);
+
+                // Random cash amount between 5,000,000 and 25,000,000 KIP
+                let minAmount = 5000000;
+                let maxAmount = 25000000;
+                let randomAmount = Math.floor(Math.random() * (maxAmount - minAmount + 1)) + minAmount;
+
+                let formattedAmount = randomAmount.toLocaleString();
+
+                tickerEl.style.animation = 'none';
+                tickerEl.offsetHeight; // trigger reflow
+                tickerEl.style.animation = 'fadeInOut 0.5s ease-in-out';
+
+                // Pure English notification format
+                tickerEl.innerHTML = `<i class="fas fa-check-circle me-1 text-light"></i> Congratulations! User <b>${randomId}</b> has successfully withdrawn <span class="text-warning fw-bold">${formattedAmount} KIP</span> via network secure system.`;
+            }
+
+            updateTicker();
+            setInterval(updateTicker, 3000);
+        }
+
+        function renderPlaylist() {
+            let playlist = JSON.parse(localStorage.getItem('video_playlist')) || [];
+            let container = document.getElementById('playlistContainer');
+
+            if (playlist.length === 0) {
+                container.innerHTML = `<p class="text-white small text-center my-3">No videos added by Admin yet.</p>`;
+                return;
+            }
+
+            let html = "";
+            playlist.forEach((vid) => {
+                let activeClass = (vid.id === currentActiveVideoId) ? "active" : "";
+                let h = vid.hours || 0;
+                let m = vid.mins || 0;
+                html += `
+          <div class="video-item ${activeClass}">
+            <div class="text-start me-2">
+              <span class="d-block fw-bold text-white small mb-1">${vid.title}</span>
+              <span class="badge bg-dark text-warning" style="font-size:10px; margin-right:5px; border:1px solid rgba(255,193,7,0.1);"><i class="fas fa-clock me-1"></i>${h}h ${m}m</span>
+              <span class="badge bg-dark text-danger" style="font-size:10px; border:1px solid rgba(255,0,60,0.1);"><i class="fas fa-fire me-1"></i>Reward: 5,000 KIP/Hr</span>
+            </div>
+            <button onclick="prepareVideo('${vid.id}', '${vid.title}', ${h}, ${m})" class="btn btn-sm btn-watch-task py-1 px-3 fw-bold" style="font-size:12px; border-radius:8px;">
+              <i class="fas fa-play me-1"></i> Watch
+            </button>
+          </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function prepareVideo(videoId, title, hours, mins) {
+            clearInterval(earningInterval);
+            sessionEarnings = 0;
+            currentActiveVideoId = videoId;
+            currentVideoDuration = (hours * 3600) + (mins * 60);
+
+            document.getElementById('timerDisplay').innerText = `Session Earnings: 0.00 KIP`;
+            document.getElementById('nowPlayingTitle').innerHTML = `<i class="fab fa-youtube text-danger me-2 animate-pulse"></i>Task: ${title}`;
+            document.getElementById('statusText').innerText = "Ready to start. Click the button below.";
+
+            document.getElementById('playerArea').innerHTML = `
+        <div class="streaming-player">
+          <h6 class="text-white small mb-2 text-center px-4 fw-bold">${title}</h6>
+          <p class="text-warning small mb-3">Target Duration: ${hours} Hours ${mins} Minutes</p>
+          <button onclick="startSimulatedVideo('${title}')" class="btn btn-lg btn-danger fw-bold px-4" style="border-radius:50px; background:#ff003c; border:none; box-shadow: 0 0 20px rgba(255,0,60,0.6);">
+            <i class="fas fa-play-circle me-2"></i> Click to Play Video & Earn
+          </button>
+        </div>`;
+
+            renderPlaylist();
+        }
+
+        function formatTime(totalSeconds) {
+            let hrs = Math.floor(totalSeconds / 3600);
+            let mins = Math.floor((totalSeconds % 3600) / 60);
+            let secs = Math.floor(totalSeconds % 60);
+            if (hrs > 0) {
+                return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            } else {
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function startSimulatedVideo(videoTitle) {
+            clearInterval(earningInterval);
+            currentVideoCurrentTime = 0;
+            updatePlayerUI(videoTitle);
+            document.getElementById('statusText').innerText = "Streaming active... Do not close this page! 💰";
+
+            earningInterval = setInterval(() => {
+                currentVideoCurrentTime++;
+                sessionEarnings += ratePerSecond;
+                userAccount.balance += ratePerSecond;
+                userAccount.totalWatched = (userAccount.totalWatched || 0) + 1;
+
+                document.getElementById('timerDisplay').innerText = `Session Earnings: ${sessionEarnings.toFixed(2)} KIP`;
+                document.getElementById('userBalance').innerText = Math.floor(userAccount.balance).toLocaleString();
+                document.getElementById('totalWatched').innerText = userAccount.totalWatched;
+
+                let progressPercent = (currentVideoCurrentTime / currentVideoDuration) * 100;
+                let progressBar = document.getElementById('simProgress');
+                let timeLabel = document.getElementById('simTimeLabel');
+
+                if (progressBar) progressBar.style.width = progressPercent + "%";
+                if (timeLabel) timeLabel.innerText = `${formatTime(currentVideoCurrentTime)} / ${formatTime(currentVideoDuration)}`;
+
+                localStorage.setItem('web_users', JSON.stringify(allUsers));
+
+                if (currentVideoCurrentTime >= currentVideoDuration) {
+                    clearInterval(earningInterval);
+                    document.getElementById('statusText').innerText = "Video Finished! Task completed. 🎉";
+                    Swal.fire({
+                        icon: 'success', title: 'Task Completed!',
+                        text: 'You have watched this video to the end and successfully earned rewards!',
+                        background: '#16161a', color: '#ffffff'
+                    });
+                }
+            }, 1000);
+        }
+
+        function updatePlayerUI(title) {
+            document.getElementById('playerArea').innerHTML = `
+        <div class="streaming-player">
+          <div class="audio-wave">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <h6 class="text-danger small mb-1 fw-bold"><i class="fas fa-broadcast-tower text-danger me-1"></i> NOW STREAMING</h6>
+          <span class="text-white text-center px-4 mb-3 small" style="font-size:12px;">${title}</span>
+          <div class="small fw-bold text-warning mb-1" id="simTimeLabel">00:00 / ${formatTime(currentVideoDuration)}</div>
+          <div class="video-progress-box">
+            <div class="video-progress-bar" id="simProgress"></div>
+          </div>
+        </div>`;
+        }
+
+        function openWithdrawModal() {
+            if (userAccount.balance < 4000000) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '<span style="color: #ff003c">Withdrawal Failed!</span>',
+                    html: `Your balance is <b>${Math.floor(userAccount.balance).toLocaleString()} KIP</b>.<br>Minimum requirement: <span class="text-warning">4,000,000 KIP</span>`,
+                    background: '#16161a', color: '#ffffff'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'KYC & Withdrawal Request Form',
+                text: 'Please input your valid matching government details to avoid process delays.',
+                html: `
+          <div class="text-start px-1" style="font-size: 14px;">
+            <label class="text-danger small fw-bold mb-1">Full Name (As shown in document)</label>
+            <input id="wdFullName" class="swal2-input m-0 mb-2 w-100" style="background:#0a0a0c; border:1px solid #333; color:#fff;" type="text" placeholder="John Doe">
+            
+            <label class="text-danger small fw-bold mb-1">Date of Birth</label>
+            <input id="wdDob" class="swal2-input m-0 mb-2 w-100" style="background:#0a0a0c; border:1px solid #333; color:#fff;" type="date">
+            
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="text-danger small fw-bold mb-1">Place of Birth</label>
+                <input id="wdPob" class="swal2-input m-0 w-100" style="background:#0a0a0c; border:1px solid #333; color:#fff;" type="text" placeholder="State/Province">
+              </div>
+              <div class="col-6">
+                <label class="text-danger small fw-bold mb-1">Country</label>
+                <input id="wdCountry" class="swal2-input m-0 w-100" style="background:#0a0a0c; border:1px solid #333; color:#fff;" type="text" placeholder="Laos">
+              </div>
+            </div>
+
+            <label class="text-danger small fw-bold mb-1">Phone Number</label>
+            <input id="wdPhone" class="swal2-input m-0 mb-2 w-100" style="background:#0a0a0c; border:1px solid #333; color:#fff;" type="text" placeholder="+85620xxxxxxxx">
+
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="text-danger small fw-bold mb-1">Bank Name</label>
+                <input id="wdBankName" class="swal2-input m-0 w-100" style="background:#0a0a0c; border:1px solid #333; color:#fff;" type="text" placeholder="BCEL">
+              </div>
+              <div class="col-6">
+                <label class="text-danger small fw-bold mb-1">Bank Account Number</label>
+                <input id="wdBankAcc" class="swal2-input m-0 w-100" style="background:#0a0a0c; border:1px solid #333; color:#fff;" type="text" placeholder="160xxxxxxxxx">
+              </div>
+            </div>
+
+            <label class="text-danger small fw-bold mb-1">Binance Crypto Deposit / Recipient Link</label>
+            <input id="wdBinanceLink" class="swal2-input m-0 w-100" style="background:#0a0a0c; border:1px solid #333; color:#fff;" type="url" placeholder="https://www.binance.com/...">
+          </div>
+        `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Submit Request',
+                background: '#16161a',
+                color: '#ffffff',
+                preConfirm: () => {
+                    const fullName = document.getElementById('wdFullName').value.trim();
+                    const dob = document.getElementById('wdDob').value;
+                    const pob = document.getElementById('wdPob').value.trim();
+                    const country = document.getElementById('wdCountry').value.trim();
+                    const phone = document.getElementById('wdPhone').value.trim();
+                    const bankName = document.getElementById('wdBankName').value.trim();
+                    const bankAcc = document.getElementById('wdBankAcc').value.trim();
+                    const binanceLink = document.getElementById('wdBinanceLink').value.trim();
+
+                    if (!fullName || !dob || !pob || !country || !phone || !bankName || !bankAcc || !binanceLink) {
+                        Swal.showValidationMessage('Please fill out all input fields!');
+                        return false;
+                    }
+                    return { fullName, dob, pob, country, phone, bankName, bankAcc, binanceLink };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let withdrawRequests = JSON.parse(localStorage.getItem('withdraw_requests')) || [];
+                    let txId = "WD-" + Math.floor(100000 + Math.random() * 900000);
+                    let now = new Date();
+                    let timeStr = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                    withdrawRequests.push({
+                        id: txId,
+                        username: userAccount.username,
+                        amount: 4000000,
+                        time: timeStr,
+                        status: "Pending",
+                        details: result.value
+                    });
+
+                    localStorage.setItem('withdraw_requests', JSON.stringify(withdrawRequests));
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Submission Received',
+                        text: 'Your request is being reviewed. Please wait for the administrator approval.',
+                        background: '#16161a',
+                        color: '#ffffff'
+                    });
+                }
+            });
+        }
+
+        function handleLogout() {
+            clearInterval(earningInterval);
+            localStorage.removeItem('current_logged_in_user');
+            window.location.href = 'index.html';
+        }
+
+        window.onload = function () {
+            initLiveTicker();
+            renderPlaylist();
+            let playlist = JSON.parse(localStorage.getItem('video_playlist')) || [];
+            if (playlist.length > 0) {
+                let first = playlist[0];
+                prepareVideo(first.id, first.title, first.hours || 0, first.mins || 0);
+            }
+        };
+    </script>
+</body>
+
+</html>
